@@ -67,6 +67,6 @@
 
 - Prometheus: http://Instance_IP:9090
 - Alerts - http://Instance_IP/alerts
-  - List of alets - `InstanceDown`, `HighCPUUsage`, `HighMemoryUsage`, `HighDiskUsage`, `NumberOfPeersLow (Execution Client)`, `NumberOfPeersLow (Consensus Client)`
+  - List of alerts - `InstanceDown`, `HighCPUUsage`, `HighMemoryUsage`, `HighDiskUsage`, `NumberOfPeersLow (Execution Client)`, `NumberOfPeersLow (Consensus Client)`
   - Check alert_rules.yaml file for alert rules.
 - Prometheus metrics target list - http://Instance_IP:9090/targets
