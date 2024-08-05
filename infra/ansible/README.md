@@ -56,7 +56,7 @@
 
 ### Monitoring URLs
 
-- Gragana: http://Instance_IP:3000
+- Gragana: `http://Instance_IP:3000`
   - Grafana `login` is disabled
   - List of dashboards
     - `Docker Container & Host Metrics`
@@ -65,8 +65,9 @@
     - `Geth Dashboard`
     - `Prysm Dashboard`
 
-- Prometheus: http://Instance_IP:9090
-- Alerts - http://Instance_IP/alerts
+- Prometheus: `http://Instance_IP:9090`
+- Alerts - `http://Instance_IP:9090/alerts`
   - List of alerts - `InstanceDown`, `HighCPUUsage`, `HighMemoryUsage`, `HighDiskUsage`, `NumberOfPeersLow (Execution Client)`, `NumberOfPeersLow (Consensus Client)`
-  - Check alert_rules.yaml file for alert rules.
-- Prometheus metrics target list - http://Instance_IP:9090/targets
+- Alert rules - `http://Insance_IP:9090/rules`
+  - Check [alert_rules.yaml](https://github.com/royki/ethereum-node/blob/master/infra/ansible/roles/monitoring/files/alertmanager/alert_rules.yaml) file for alert rules details.
+- Prometheus metrics target list - `http://Instance_IP:9090/targets`

@@ -39,6 +39,6 @@
 - Prometheus: `http://Instance_IP:9090`
 - Alerts - `http://Instance_IP/alerts`
   - List of alerts - `InstanceDown`, `HighCPUUsage`, `HighMemoryUsage`, `HighDiskUsage`, `NumberOfPeersLow (Execution Client)`, `NumberOfPeersLow (Consensus Client)`
-- Alert rules - `http://Insance_IP/rules`
-  - Check alert_rules.yaml file for alert rules details.
+- Alert rules - `http://Insance_IP:9090/rules`
+  - Check [alert_rules.yaml](https://github.com/royki/ethereum-node/blob/master/infra/docker-setup/monitoring/prometheus/alert_rules.yaml) file for alert rules details.
 - Prometheus metrics target - `http://Instance_IP:9090/targets`
