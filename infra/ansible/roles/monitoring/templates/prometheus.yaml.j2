@@ -1,0 +1,70 @@
+# This file is not intended to be modified - any changes here could be overwritten next time you update.
+# If you just need to add some new scrape targets to Prometheus, place these in the conf.d folder.
+# You can use the existing files as inspiration, and the docs are here:
+# https://prometheus.io/docs/prometheus/latest/configuration/configuration/
+#
+# If you need to override the settings in this file, or add other top-level configuration
+# (e.g.) remote_write config, please use custom-prom.yml.
+# The modifications in that file will supercede the settings here (or extend, in the case of lists)
+
+global:
+  scrape_interval:     {{ monitoring_prometheus_scrape_interval }} # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: {{ monitoring_prometheus_eval_interval }} # Evaluate rules every 15 seconds. The default is every 1 minute.
+  # scrape_timeout:      {{ monitoring_prometheus_scrape_timeout }} # Timeout must be shorter than the interval
+
+# Service detection from the Docker socket.
+#
+# If you have extra containers you'd like to monitor, you will need to add the following labels:
+#   - `metrics.scrape=true`
+#   - `metrics.port=<the metrics port>`
+# And you will have to ensure that the container is connected to the same network by including
+# `ext-network.yml` in your .env file.
+
+scrape_configs:
+  - job_name: 'execution_node'
+    scrape_interval: {{ monitoring_eth1_scrape_interval }}
+    scrape_timeout: {{ monitoring_eth1_scrape_timeout }}
+    metrics_path: {{ monitoring_eth1_metrics_path }}
+    scheme: {{ monitoring_prometheus_job_scheme }}
+    static_configs:
+      - targets:
+{% for host in groups['eth-node'] %}
+        - '{{ hostvars[host].ansible_default_ipv4.address }}:{{ monitoring_eth1_metrics_port }}'
+{% endfor %}
+
+  - job_name: 'consensus_node'
+    scrape_interval: {{ monitoring_eth2_scrape_interval }}
+    metrics_path: {{ monitoring_eth2_metrics_path }}
+    scheme: {{ monitoring_prometheus_job_scheme }}
+    static_configs:
+      - targets:
+{% for host in groups['eth-node'] %}
+        - '{{ hostvars[host].ansible_default_ipv4.address }}:{{ monitoring_eth2_metrics_port }}'
+{% endfor %}
+
+  - job_name: 'node_exporter'
+    static_configs:
+      - targets:
+{% for host in groups['eth-node'] %}
+          - '{{ hostvars[host].ansible_default_ipv4.address }}:{{ monitoring_node_exporter_port }}'
+{% endfor %}
+
+  - job_name: 'eth-metrics-exporter'
+    metrics_path: {{ monitoring_eth_metrics_exporter_metrics_path }}
+    static_configs:
+      - targets: ['{{ ansible_default_ipv4.address }}:{{ monitoring_eth_metrics_exporter_port }}']
+
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets:
+{% for host in groups['eth-node'] %}
+          - '{{ hostvars[host].ansible_default_ipv4.address }}:{{ monitoring_cadvisor_port }}'
+{% endfor %}
+
+rule_files:
+  - '/etc/prometheus/alert_rules.yaml'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['{{ ansible_default_ipv4.address }}:{{ monitoring_alertmanager_port }}']

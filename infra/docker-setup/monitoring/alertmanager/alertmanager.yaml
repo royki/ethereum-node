@@ -1,0 +1,21 @@
+global:
+  # Slack webhook URL
+  slack_api_url: 'UPDATE_SLACK_WEBHOOK_URL_HERE'
+
+route:
+  receiver: 'slack'
+
+receivers:
+  - name: 'slack'
+    slack_configs:
+      - channel: 'UPDATE_SLACK_CHANNEL_HERE'
+        send_resolved: true
+        title: '{{ if eq .Status "firing" }}:scream:{{ else }}:party_parrot:{{ end }} [{{ .Status | toUpper }}] {{ range .Alerts }}{{ .Annotations.message }}{{ end }}'
+        text: >-
+          {{ range .Alerts }}
+            *Alert:* {{ .Annotations.summary }} - {{ .Labels.severity }}
+            *Details:*
+            {{ .Annotations.message }}
+            {{ range .Labels.SortedPairs }} • *{{ .Name }}:* {{ .Value }}
+            {{ end }}
+          {{ end }}

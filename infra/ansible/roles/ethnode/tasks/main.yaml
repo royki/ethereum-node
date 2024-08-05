@@ -1,0 +1,15 @@
+---
+- name: Config directory for execution client
+  ansible.builtin.import_tasks: config.yaml
+  tags:
+    - cofig
+
+- name: JWT Token
+  ansible.builtin.import_tasks: jwt.yaml
+  tags:
+    - jwt
+
+- name: Docker Service for execution client
+  ansible.builtin.import_tasks: docker.yaml
+  tags:
+    - docker

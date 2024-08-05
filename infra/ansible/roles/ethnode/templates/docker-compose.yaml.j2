@@ -1,0 +1,242 @@
+---
+name: {{ ethnode_docker_network }}
+
+services:
+  {{ ethnode_geth_service_name }}:
+    image: {{ ethnode_geth_image }}:{{ ethnode_geth_version }}
+    container_name: {{ ethnode_geth_service_name }}
+    volumes:
+      - {{ ethnode_data_dir }}/eth1:{{ ethnode_data_dir }}
+      - {{ ethnode_data_dir }}/.jwt.hex:{{ ethnode_geth_jwt_secret_key_file}}:ro
+    ports:
+      - {{ ethnode_geth_p2p_port }}:{{ ethnode_geth_p2p_port }}/tcp
+      - {{ ethnode_geth_p2p_port }}:{{ ethnode_geth_p2p_port }}/udp
+{% if ethnode_geth_rpc_enabled %}
+      - {{ ethnode_geth_rpc_port }}:{{ ethnode_geth_rpc_port }}
+{% endif %}
+{% if ethnode_geth_ws_enabled %}
+      - {{ ethnode_geth_ws_port }}:{{ ethnode_geth_ws_port }}
+{% endif %}
+{% if ethnode_geth_authrpc_enabled %}
+      - {{ ethnode_geth_authrpc_port }}:{{ ethnode_geth_authrpc_port }}
+{% endif %}
+{% if ethnode_geth_metrics_enabled %}
+      - {{ ethnode_geth_metrics_port }}:{{ ethnode_geth_metrics_port }}
+{% endif %}
+    command: |
+      --{{ ethnode_eth_network_name }}
+      --datadir={{ ethnode_data_dir }}
+      --syncmode={{ ethnode_geth_sync_mode }}
+      --ipcpath={{ ethnode_data_dir }}/geth.ipc
+{% if ethnode_geth_rpc_enabled %}
+      --http
+      --http.addr={{ ethnode_geth_http_addr }}
+      --http.port={{ ethnode_geth_rpc_port }}
+      --http.vhosts={{ ethnode_geth_cors_domain }}
+      --http.corsdomain={{ ethnode_geth_cors_domain }}
+      --http.api='{{ ethnode_geth_http_rpc_api }}'
+{% endif %}
+{% if ethnode_geth_ws_enabled %}
+      --ws
+      --ws.addr={{ ethnode_geth_ws_addr }}
+      --ws.port={{ ethnode_geth_ws_port }}
+      --ws.origins={{ ethnode_geth_cors_domain }}
+      --ws.api='{{ ethnode_geth_ws_api }}'
+{% endif %}
+{% if ethnode_geth_authrpc_enabled %}
+      --authrpc.addr={{ ethnode_geth_authrpc_addr }}
+      --authrpc.port={{ ethnode_geth_authrpc_port }}
+      --authrpc.jwtsecret={{ ethnode_geth_jwt_secret_key_file }}
+      --authrpc.vhosts={{ ethnode_geth_cors_domain }}
+{% endif %}
+      --pprof
+      --pprof.addr={{ ethnode_geth_pprof_addr }}
+      --maxpeers={{ ethnode_geth_max_peers }}
+      --maxpendpeers={{ ethnode_geth_max_pending_peers }}
+      --verbosity={{ ethnode_geth_log_level }}
+{% if ethnode_geth_metrics_enabled %}
+      --metrics
+      --metrics.addr={{ ethnode_geth_metrics_addr }}
+      --metrics.port={{ ethnode_geth_metrics_port }}
+{% endif %}
+    restart: {{ ethnode_docker_restart_policy }}
+    labels:
+      metrics.instance: {{ ethnode_geth_service_name|default('execution') }}
+      metrics.network: {{ ethnode_geth_network_name}}
+      metrics.path: /debug/metrics/prometheus
+      metrics.port: "{{ ethnode_geth_metrics_port|default('6060') }}"
+      metrics.scrape: "true"
+    logging:
+      driver: json-file
+      options:
+        max-file: "3"
+        max-size: 100m
+        tag: "{{ '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}' }}"
+    networks:
+      - {{ ethnode_docker_network }}
+
+  {{ ethnode_prysm_service_name }}:
+    image: {{ ethnode_prysm_image }}:{{ ethnode_prysm_version }}
+    container_name: {{ ethnode_prysm_service_name }}
+    volumes:
+      - {{ ethnode_data_dir }}/eth2:{{ ethnode_data_dir }}
+      - {{ ethnode_data_dir }}/.jwt.hex:{{ ethnode_prysm_jwt_secret_key_file }}:ro
+    ports:
+      - {{ ethnode_prysm_p2p_port_tcp }}:{{ ethnode_prysm_p2p_port_tcp }}/tcp
+      - {{ ethnode_prysm_p2p_port_upd }}:{{ ethnode_prysm_p2p_port_upd }}/udp
+{% if ethnode_prysm_rpc_enabled %}
+      - {{ ethnode_prysm_rpc_port }}:{{ ethnode_prysm_rpc_port }}
+{% endif %}
+{% if ethnode_prysm_gateway_enabled %}
+      - {{ ethnode_prysm_gateway_port }}:{{ ethnode_prysm_gateway_port }}
+{% endif %}
+{% if ethnode_prysm_monitoring_enabled %}
+      - {{ ethnode_prysm_monitoring_port }}:{{ ethnode_prysm_monitoring_port }}
+{% endif %}
+    command: |
+      --accept-terms-of-use
+      --{{ ethnode_eth_network_name }}
+      --datadir={{ ethnode_data_dir }}
+      --jwt-secret={{ ethnode_prysm_jwt_secret_key_file }}
+      --p2p-tcp-port={{ ethnode_prysm_p2p_port_tcp }}
+      --p2p-udp-port={{ ethnode_prysm_p2p_port_upd }}
+      --min-sync-peers={{ ethnode_prysm_min_sync_peers }}
+      --p2p-max-peers={{ ethnode_prysm_max_peers }}
+{% if ethnode_prysm_rpc_enabled %}
+      --rpc-host={{ ethnode_prysm_rpc_host }}
+      --rpc-port={{ ethnode_prysm_rpc_port }}
+      --rpc-max-page-size={{ ethnode_prsym_rpc_max_page_size }}
+      --enable-debug-rpc-endpoints={{ ethnode_prsym_rpc_url_debug|lower }}
+{% endif %}
+{% if ethnode_prysm_gateway_enabled %}
+      --grpc-gateway-host={{ ethnode_prysm_gateway_host}}
+      --grpc-gateway-port={{ ethnode_prysm_gateway_port }}
+      --grpc-max-msg-size={{ ethnode_prysm_rpc_max_msg_size}}
+{% endif %}
+{% if ethnode_prysm_monitoring_enabled %}
+      --pprof
+      --pprofaddr={{ ethnode_prysm_pprof_addr }}
+      --monitoring-host={{ ethnode_prysm_monitoring_host }}
+      --monitoring-port={{ ethnode_prysm_monitoring_port }}
+{% endif %}
+      --execution-endpoint={{ ethnode_eth1_url }}
+      --verbosity={{ ethnode_prysm_log_level }}
+{% if ethnode_prysm_checkpoint_sync_enabled %}
+      --checkpoint-sync-url={{ ethnode_prsym_checkpoint_sync_url }}
+{% endif %}
+{% if ethnode_prysm_suggested_fee_recipient!= '' %}
+      --suggested-fee-recipient={{ ethnode_prysm_suggested_fee_recipient }}
+{% endif %}
+    restart: {{ ethnode_docker_restart_policy }}
+    labels:
+      metrics.instance: {{ ethnode_prysm_service_name|default('execution') }}
+      metrics.network: {{ ethnode_eth_network_name }}
+      metrics.path: /metrics
+      metrics.port: "{{ ethnode_prysm_monitoring_port|default('8008') }}"
+      metrics.scrape: "true"
+    logging:
+      driver: json-file
+      options:
+        max-file: "3"
+        max-size: 100m
+        tag: "{{ '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}' }}"
+    networks:
+      - {{ ethnode_docker_network }}
+
+  {{ ethnode_cadvisor_service_name }}:
+    image: {{ ethnode_cadvisor_image }}:{{ ethnode_cadvisor_version }}
+    container_name: {{ ethnode_cadvisor_service_name }}
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    ports:
+      - {{ ethnode_cadvisor_port}}:{{ ethnode_cadvisor_port}}
+    command:
+      - --docker_only
+      - --housekeeping_interval=30s
+    restart: {{ ethnode_docker_restart_policy|default('unless-stopped') }}
+    labels:
+      metrics.instance: {{ ethnode_cadvisor_service_name }}
+      metrics.network: {{ ethnode_eth_network_name}}
+      metrics.path: /metrics
+      metrics.port: "{{ ethnode_cadvisor_port|default('8080') }}"
+      metrics.scrape: "true"
+    logging:
+      driver: json-file
+      options:
+        max-file: "3"
+        max-size: 100m
+        tag: "{{ '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}' }}"
+    networks:
+      - {{ ethnode_docker_network }}
+
+  {{ ethnode_node_exporter_service_name }}:
+    image: {{ ethnode_node_exporter_image }}:{{ ethnode_node_exporter_version }}
+    container_name: {{ ethnode_node_exporter_service_name }}
+    volumes:
+      - /:/host:ro
+      - /sys:/host/sys
+      - /proc:/host/proc
+      - /etc/hostname:/etc/nodename:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - {{ ethnode_node_exporter_port }}:{{ ethnode_node_exporter_port }}
+    command:
+      - --path.rootfs=/host
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+      - --collector.filesystem.ignored-mount-points=^/(dev|proc|sys|run|var/lib/docker/.+)($$|/)
+      - --no-collector.ipvs
+    restart: {{ ethnode_docker_restart_policy|default('unless-stopped') }}
+    labels:
+      metrics.instance: {{ ethnode_node_exporter_service_name }}
+      metrics.network: {{ ethnode_eth_network_name }}
+      metrics.path: /metrics
+      metrics.port: "{{ ethnode_node_exporter_port|default('9100') }}"
+      metrics.scrape: "true"
+    logging:
+      driver: json-file
+      options:
+        max-file: "3"
+        max-size: 100m
+        tag: "{{ '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}' }}"
+    pid: host
+    networks:
+      - {{ ethnode_docker_network }}
+
+  {{ ethnode_promtail_service_name }}:
+    image: {{ ethnode_promtail_image }}:{{ ethnode_promtail_version }}
+    container_name: {{ ethnode_promtail_service_name }}
+    user: root
+    volumes:
+      - /etc/machine-id:/etc/machine-id:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./promtail:/etc/promtail
+    ports:
+      - {{ ethnode_promtail_http_port }}:{{ ethnode_promtail_http_port }}
+    command:
+      - '-config.file=/etc/promtail/promtail-config.yaml'
+    environment:
+      SERVER_LABEL_HOSTNAME: {{ ethnode_docker_network }}
+    restart: {{ ethnode_docker_restart_policy|default('unless-stopped') }}
+    labels:
+      metrics.instance: {{ ethnode_promtail_service_name }}
+      metrics.network: {{ ethnode_eth_network_name }}
+      metrics.path: /metrics
+      metrics.port: "{{ ethnode_promtail_http_port|default('9080') }}"
+      metrics.scrape: "true"
+    logging:
+      driver: json-file
+      options:
+        max-file: "3"
+        max-size: 100m
+        tag: "{{ '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}' }}"
+    networks:
+      - {{ ethnode_docker_network }}
+
+networks:
+  {{ ethnode_docker_network }}:
+    name: {{ ethnode_docker_network }}

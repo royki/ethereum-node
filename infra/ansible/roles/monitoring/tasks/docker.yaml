@@ -1,0 +1,16 @@
+---
+- name: Copy docker-compose to {{ monitoring_data_directory }} directory
+  ansible.builtin.template:
+    src: 'docker-compose.yaml.j2'
+    dest: '{{ monitoring_data_directory }}/docker-compose.yaml'
+    owner: '{{ ansible_ssh_user }}'
+    group: '{{ ansible_ssh_user }}'
+    mode: '0600'
+  when: not ansible_check_mode
+
+- name: Run Docker compose (Monitoring)
+  ansible.builtin.command: |
+    chdir={{ monitoring_data_directory }}
+    docker compose -f docker-compose.yaml up -d --force-recreate
+  changed_when: false
+  when: not ansible_check_mode

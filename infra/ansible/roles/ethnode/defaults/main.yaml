@@ -1,0 +1,87 @@
+---
+# docker config
+ethnode_docker_network: 'ethereum'
+ethnode_docker_restart_policy: 'always'
+
+# commong ethereum config
+ethnode_eth_network_name: 'holesky' # 'mainnet'
+ethnode_network_id: 17000 # 1
+ethnode_data_dir: '/data'
+
+# execution clinet
+ethnode_geth_image: 'ethereum/client-go'
+ethnode_geth_version: 'stable'
+ethnode_geth_service_name: 'eth1'
+ethnode_geth_jwt_secret_key_file: '/var/lib/geth/jwtsecret'
+ethnode_geth_network_id: 17000 # 1
+ethnode_geth_network_name: 'holesky' # 'mainnet'
+ethnode_geth_sync_mode: 'full'
+ethnode_geth_ipc_path: '{{ geth_data_dir }}/geth.ipc'
+ethnode_geth_rpc_enabled: true
+ethnode_geth_http_addr: '0.0.0.0'
+ethnode_geth_http_rpc_api: 'eth,net,web3,admin,personal,engine,txpool'
+ethnode_geth_cors_domain: '*'
+ethnode_geth_ws_enabled: true
+ethnode_geth_ws_addr: '0.0.0.0'
+ethnode_geth_ws_api: 'eth,net,web3,admin,personal,engine,txpool'
+ethnode_geth_authrpc_enabled: true
+ethnode_geth_authrpc_addr: '0.0.0.0'
+ethnode_geth_pprof_addr: '0.0.0.0'
+ethnode_geth_metrics_enabled: true
+ethnode_geth_metrics_addr: '0.0.0.0'
+ethnode_geth_p2p_port: 30303
+ethnode_geth_rpc_port: 8545
+ethnode_geth_ws_port: 8546
+ethnode_geth_authrpc_port: 8551
+ethnode_geth_metrics_port: 6061
+ethnode_geth_max_peers: 50
+ethnode_geth_max_pending_peers: 20
+ethnode_geth_log_level: 3
+
+# consensus clinet
+ethnode_prysm_image: 'gcr.io/prysmaticlabs/prysm/beacon-chain'
+ethnode_prysm_version: 'stable'
+ethnode_prysm_service_name: 'eth2'
+ethnode_prysm_jwt_secret_key_file: '/var/lib/prysm/jwtsecret'
+ethnode_prysm_min_sync_peers: 5
+ethnode_prysm_max_peers: 70
+ethnode_prysm_rpc_enabled: true
+ethnode_prysm_rpc_host: '0.0.0.0'
+ethnode_prysm_rpc_port: 4000
+ethnode_prsym_rpc_max_page_size: 200000
+ethnode_prysm_rpc_max_msg_size: 268435456
+ethnode_prsym_rpc_url_debug: true
+ethnode_prysm_gateway_enabled: true
+ethnode_prysm_gateway_host: '0.0.0.0'
+ethnode_prysm_gateway_port: 5052
+ethnode_prysm_p2p_port_tcp: 13000
+ethnode_prysm_p2p_port_upd: 12000
+ethnode_prysm_monitoring_enabled: true
+ethnode_prysm_monitoring_host: '0.0.0.0'
+ethnode_prysm_monitoring_port: 8008
+ethnode_prysm_pprof_addr: '0.0.0.0'
+ethnode_prysm_log_level: 'info'
+ethnode_prysm_checkpoint_sync_enabled: true
+ethnode_prsym_checkpoint_sync_url: 'https://holesky.beaconstate.info'
+ethnode_prysm_suggested_fee_recipient: '' # Provide Eth address
+ethnode_eth1_url: 'http://{{ ethnode_geth_service_name }}:{{ ethnode_geth_authrpc_port }}'
+
+# cadvisor config
+ethnode_cadvisor_image: 'gcr.io/cadvisor/cadvisor'
+ethnode_cadvisor_service_name: 'cadvisor'
+ethnode_cadvisor_version: 'v0.49.1'
+ethnode_cadvisor_port: 8080
+
+# node-exporter
+ethnode_node_exporter_image: 'prom/node-exporter'
+ethnode_node_exporter_version: 'latest'
+ethnode_node_exporter_service_name: 'node-exporter'
+ethnode_node_exporter_port: 9100
+
+# promtail/loki config
+ethnode_promtail_image: 'grafana/promtail'
+ethnode_promtail_version: 'latest'
+ethnode_promtail_service_name: 'promtail'
+ethnode_promtail_http_port: 9080
+ethnode_promtail_grpc_port: 9081
+ethnode_loki_port: 3100

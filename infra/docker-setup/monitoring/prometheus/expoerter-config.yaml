@@ -1,0 +1,17 @@
+consensus:
+  enabled: true
+  url: "http://eth2:5052"
+  name: "consensus-client"
+execution:
+  enabled: true
+  url: "http://eth1:8545"
+  name: "execution-client"
+  modules:
+    - "eth"
+    - "net"
+    - "web3"
+    - "txpool"
+diskUsage:
+  enabled: false
+  directories:
+  - /data/ethereum

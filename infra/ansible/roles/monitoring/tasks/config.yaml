@@ -1,0 +1,62 @@
+---
+- name: Create monitoring data directory
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: directory
+    owner: '{{ ansible_ssh_user }}'
+    group: '{{ ansible_ssh_user }}'
+    mode: '0755'
+  with_items:
+    - '{{ monitoring_data_directory }}'
+    - '{{ monitoring_data_directory }}/loki'
+    - '{{ monitoring_data_directory }}/prometheus'
+    - '{{ monitoring_data_directory }}/alertmanager'
+    - '{{ monitoring_data_directory }}/loki-data'
+    - '{{ monitoring_data_directory }}/grafana-data'
+    - '{{ monitoring_data_directory }}/prometheus-data'
+    - '{{ monitoring_data_directory }}/alertmanager-data'
+    - '{{ monitoring_data_directory }}/grafana/provisioning/datasources'
+  when: not ansible_check_mode
+  changed_when: false
+
+- name: Copy grafana files to {{ monitoring_data_directory }} directory
+  ansible.builtin.copy:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+    owner: '{{ ansible_ssh_user }}'
+    group: '{{ ansible_ssh_user }}'
+    mode: '0755'
+  with_items:
+    - { src: "files/grafana", dest: "{{ monitoring_data_directory }}" }
+    - { src: "files/alertmanager/alert_rules.yaml", dest: "{{ monitoring_data_directory }}/prometheus" }
+  when: not ansible_check_mode
+
+- name: Copy config files to {{ monitoring_data_directory }} directory
+  ansible.builtin.template:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+    owner: '{{ ansible_ssh_user }}'
+    group: '{{ ansible_ssh_user }}'
+    mode: '0755'
+  when: not ansible_check_mode
+  with_items:
+    - { src: 'loki.yaml.j2', dest: '{{ monitoring_data_directory }}/loki/loki.yaml' }
+    - { src: 'prometheus.yaml.j2', dest: '{{ monitoring_data_directory }}/prometheus/prometheus.yaml' }
+    - { src: 'alertmanager.yaml.j2', dest: '{{ monitoring_data_directory }}/alertmanager/alertmanager.yaml' }
+    - { src: 'expoerter-config.yaml.j2', dest: '{{ monitoring_data_directory }}/prometheus/expoerter-config.yaml' }
+    - { src: 'datasource.yaml.j2', dest: '{{ monitoring_data_directory }}/grafana/provisioning/datasources/datasource.yaml' }
+
+- name: Ensure directories have correct permissions
+  ansible.builtin.file:
+    path: '{{ item.path }}'
+    owner: '{{ item.owner }}'
+    group: '{{ item.group }}'
+    mode: '0755'
+  with_items:
+    - { path: '{{ monitoring_data_directory }}/grafana-data', owner: 472, group: 472 }
+    - { path: '{{ monitoring_data_directory }}/loki-data', owner: 10001, group: 10001 }
+    - { path: '{{ monitoring_data_directory }}/prometheus-data', owner: 65534, group: 65534 }
+    - { path: '{{ monitoring_data_directory }}/grafana/provisioning', owner: 472, group: 472 }
+    - { path: '{{ monitoring_data_directory }}/alertmanager-data', owner: 65534, group: 65534 }
+  when: not ansible_check_mode
+  changed_when: false

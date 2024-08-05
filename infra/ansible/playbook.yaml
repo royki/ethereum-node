@@ -1,0 +1,14 @@
+---
+- hosts: eth-node
+  gather_facts: yes
+  become: yes
+  roles:
+    - ethnode
+
+- hosts: monitor
+  gather_facts: yes
+  become: yes
+  roles:
+    - monitoring
+
+

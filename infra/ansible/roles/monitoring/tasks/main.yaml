@@ -1,0 +1,10 @@
+---
+- name: Configure monitoring
+  import_tasks: config.yaml
+  tags:
+    - config
+
+- name: Start monitoring services
+  import_tasks: docker.yaml
+  tags:
+    - docker

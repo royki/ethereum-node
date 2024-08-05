@@ -1,0 +1,31 @@
+# config file version
+apiVersion: 1
+
+# list of datasources that should be deleted from the database
+deleteDatasources:
+  - name: Prometheus
+    orgId: 1
+
+  - name: Loki
+    orgId: 1
+
+# list of datasources to insert/update depending
+# whats available in the database
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    orgId: 1
+    url: http://{{ ansible_default_ipv4.address }}:{{ monitoring_prometheus_port|default(9090) }}
+
+    basicAuth: false
+    isDefault: true
+    version: 1
+    editable: true
+
+  - name: Loki
+    type: loki
+    access: proxy
+    orgId: 1
+    url: http://{{ ansible_default_ipv4.address }}:{{ monitoring_loki_http_port|default(3100) }}
+    editable: true

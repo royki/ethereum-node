@@ -1,0 +1,8 @@
+---
+- name: Generate JWT Token
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      openssl rand -hex 32 | tr -d "\n" > {{ ethnode_data_dir }}/.jwt.hex
+    executable: /bin/bash
+  changed_when: false

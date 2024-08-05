@@ -1,0 +1,22 @@
+---
+- name: Create chain directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: directory
+    mode: '0755'
+    owner: '{{ ansible_ssh_user }}'
+    group: '{{ ansible_ssh_user }}'
+  with_items:
+    - '{{ ethnode_data_dir }}/eth1'
+    - '{{ ethnode_data_dir }}/eth2'
+    - '{{ ethnode_data_dir }}/promtail'
+  when: not ansible_check_mode
+
+- name: Copy promtail config
+  ansible.builtin.template:
+    src: promtail-config.yaml.j2
+    dest: '{{ ethnode_data_dir }}/promtail/promtail-config.yaml'
+    owner: '{{ ansible_ssh_user }}'
+    group: '{{ ansible_ssh_user }}'
+    mode: '0644'
+  when: not ansible_check_mode

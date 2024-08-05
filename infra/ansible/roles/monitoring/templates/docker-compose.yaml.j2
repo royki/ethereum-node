@@ -1,0 +1,84 @@
+---
+name: {{ monitoring_docker_network }}
+
+services:
+  {{ monitoring_prometheus_service }}:
+    image: {{ monitoring_prometheus_image }}:{{ monitoring_prometheus_image_tag }}
+    container_name: {{ monitoring_prometheus_service }}
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - ./prometheus-data:/prometheus
+    ports:
+      - {{ monitoring_prometheus_port }}:{{ monitoring_prometheus_port }}
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=2d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    restart: {{ monitoring_docker_restart_policy }}
+    networks:
+      - {{ monitoring_docker_network }}
+
+  {{ monitoring_grafana_service }}:
+    image: {{ monitoring_grafana_image }}:{{ monitoring_grafana_image_tag }}
+    container_name: {{ monitoring_grafana_service}}
+    depends_on:
+      -  {{ monitoring_prometheus_service }}
+    ports:
+      - {{ monitoring_grafana_port }}:{{ monitoring_grafana_port }}
+    volumes:
+      - ./grafana-data:/var/lib/grafana
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+      - ./grafana/provisioning/datasources:/etc/prometheus/datasources/datasource.yaml
+    env_file:
+      - ./grafana/config.monitoring
+    restart: {{ monitoring_docker_restart_policy }}
+    networks:
+      - {{ monitoring_docker_network }}
+
+  {{ monitoring_loki_service}}:
+    image: {{ monitoring_loki_image }}:{{ monitoring_loki_image_tag }}
+    container_name: {{ monitoring_loki_service }}
+    volumes:
+      - ./loki:/etc/loki/
+      - ./loki-data:/tmp
+    ports:
+      - {{ monitoring_loki_http_port }}:{{ monitoring_loki_http_port }}
+    command:
+      - --config.file=/etc/loki/loki.yaml
+    restart: {{ monitoring_docker_restart_policy }}
+    networks:
+      - {{ monitoring_docker_network }}
+
+  {{ monitoring_alertmanager_service }}:
+    image: {{ monitoring_alertmanager_image }}:{{ monitoring_alertmanager_image_tag }}
+    container_name: {{ monitoring_alertmanager_service }}
+    volumes:
+      - ./alertmanager/alertmanager.yaml:/etc/alertmanager/alertmanager.yaml
+      - ./alertmanager-data:/data
+    ports:
+      - {{ monitoring_alertmanager_port }}:{{ monitoring_alertmanager_port }}
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yaml'
+      - '--log.level=debug'
+      - '--storage.path=/data'
+    restart: {{ monitoring_docker_restart_policy }}
+    networks:
+      - {{ monitoring_docker_network }}
+
+  {{ monitoring_eth_metrics_exporter_service_name }}:
+    image: {{ monitoring_eth_metrics_exporter_image }}:{{ monitoring_eth_metrics_exporter_version }}
+    container_name: {{ monitoring_eth_metrics_exporter_service_name }}
+    volumes:
+      - ./prometheus/expoerter-config.yaml:/expoerter-config.yaml
+    ports:
+      - {{ monitoring_eth_metrics_exporter_port }}:9090
+    command: --config /expoerter-config.yaml
+    restart: {{ monitoring_docker_restart_policy|default('unless-stopped') }}
+    networks:
+      - {{ monitoring_docker_network }}
+
+networks:
+  {{ monitoring_docker_network }}:
+    name: {{ monitoring_docker_network }}

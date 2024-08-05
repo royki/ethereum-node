@@ -1,0 +1,299 @@
+---
+# Create jwtsecret file at the same directory as this file
+# openssl rand -hex 32 | tr -d "\n" > .jwt.hex
+
+name: ethereum
+
+services:
+  eth1:
+    image: ethereum/client-go:stable
+    container_name: eth1
+    volumes:
+      - eth1:/data
+      - ./.jwt.hex:/var/lib/geth/jwtsecret:ro
+    ports:
+      - 30303:30303/tcp
+      - 30303:30303/udp
+      - 8545:8545
+      - 8546:8546
+      - 8551:8551
+      - 6061:6061
+    command: |
+      --holesky
+      --datadir=/data
+      --syncmode=full
+      --ipcpath=/data/geth.ipc
+      --http
+      --http.addr=0.0.0.0
+      --http.port=8545
+      --http.vhosts=*
+      --http.corsdomain=*
+      --http.api='eth,net,web3,admin,personal,engine,txpool'
+      --ws
+      --ws.addr=0.0.0.0
+      --ws.port=8546
+      --ws.origins=*
+      --ws.api='eth,net,web3,admin,personal,engine,txpool'
+      --authrpc.addr=0.0.0.0
+      --authrpc.port=8551
+      --authrpc.jwtsecret=/var/lib/geth/jwtsecret
+      --authrpc.vhosts=*
+      --pprof
+      --pprof.addr=0.0.0.0
+      --maxpeers=50
+      --maxpendpeers=20
+      --verbosity=3
+      --metrics
+      --metrics.addr=0.0.0.0
+      --metrics.port=6061
+    restart: unless-stopped
+    labels:
+      metrics.instance: eth1
+      metrics.network: holesky
+      metrics.path: /debug/metrics/prometheus
+      metrics.port: "6061"
+      metrics.scrape: "true"
+    logging:
+      driver: json-file
+      options:
+        max-file: "3"
+        max-size: 100m
+        tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
+    networks:
+      - ethereum
+
+  eth2:
+    image: gcr.io/prysmaticlabs/prysm/beacon-chain:stable
+    container_name: eth2
+    volumes:
+      - eth2:/data
+      - ./.jwt.hex:/var/lib/prysm/jwtsecret:ro
+    ports:
+      - 13000:13000/tcp
+      - 12000:12000/udp
+      - 4000:4000
+      - 5052:5052
+      - 8008:8008
+    command: |
+      --accept-terms-of-use
+      --holesky
+      --datadir=/data
+      --jwt-secret=/var/lib/prysm/jwtsecret
+      --p2p-tcp-port=13000
+      --p2p-udp-port=12000
+      --min-sync-peers=5
+      --p2p-max-peers=70
+      --rpc-host=0.0.0.0
+      --rpc-port=4000
+      --rpc-max-page-size=200000
+      --enable-debug-rpc-endpoints=true
+      --grpc-gateway-host=0.0.0.0
+      --grpc-gateway-port=5052
+      --grpc-max-msg-size=268435456
+      --pprof
+      --pprofaddr=0.0.0.0
+      --monitoring-host=0.0.0.0
+      --monitoring-port=8008
+      --execution-endpoint=http://eth1:8551
+      --verbosity=info
+      --checkpoint-sync-url=https://holesky.beaconstate.info
+    restart: unless-stopped
+    labels:
+      metrics.instance: eth2
+      metrics.network: holesky
+      metrics.path: /metrics
+      metrics.port: "8008"
+      metrics.scrape: "true"
+    logging:
+      driver: json-file
+      options:
+        max-file: "3"
+        max-size: 100m
+        tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
+    networks:
+      - ethereum
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: cadvisor
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    ports:
+      - 8080:8080
+    command:
+      - --docker_only
+      - --housekeeping_interval=30s
+    restart: unless-stopped
+    labels:
+      metrics.instance: cadvisor
+      metrics.network: holesky
+      metrics.path: /metrics
+      metrics.port: "8080"
+      metrics.scrape: "true"
+    logging:
+      driver: json-file
+      options:
+        max-file: "3"
+        max-size: 100m
+        tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
+    networks:
+      - ethereum
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    volumes:
+      - /:/host:ro
+      - /sys:/host/sys
+      - /proc:/host/proc
+      - /etc/hostname:/etc/nodename:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 9100:9100
+    command:
+      - --path.rootfs=/host
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+      - --collector.filesystem.ignored-mount-points=^/(dev|proc|sys|run|var/lib/docker/.+)($$|/)
+      - --no-collector.ipvs
+    restart: unless-stopped
+    labels:
+      metrics.instance: node-exporter
+      metrics.network: holesky
+      metrics.path: /metrics
+      metrics.port: "9100"
+      metrics.scrape: "true"
+    logging:
+      driver: json-file
+      options:
+        max-file: "3"
+        max-size: 100m
+        tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
+    pid: host
+    networks:
+      - ethereum
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    depends_on:
+      - loki
+    user: root
+    volumes:
+      - /etc/machine-id:/etc/machine-id:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./promtail:/etc/promtail
+    ports:
+      - 9080:9080
+    command:
+      - '-config.file=/etc/promtail/promtail-config.yaml'
+    environment:
+      SERVER_LABEL_HOSTNAME: ethereum
+    restart: unless-stopped
+    labels:
+      metrics.instance: promtail
+      metrics.network: holesky
+      metrics.path: /metrics
+      metrics.port: "9080"
+      metrics.scrape: "true"
+    logging:
+      driver: json-file
+      options:
+        max-file: "3"
+        max-size: 100m
+        tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
+    networks:
+      - ethereum
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./monitoring/prometheus/:/etc/prometheus/
+      - prometheus-data:/prometheus
+    ports:
+      - 9090:9090
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=2d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    restart: unless-stopped
+    networks:
+      - ethereum
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    depends_on:
+      - prometheus
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning/:/etc/grafana/provisioning/
+      - ./monitoring/grafana/provisioning/datasource.yaml:/etc/prometheus/datasources/datasource.yaml
+    env_file:
+      - ./monitoring/grafana/config.monitoring
+    restart: unless-stopped
+    networks:
+      - ethereum
+
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    volumes:
+      - ./monitoring/loki:/etc/loki/
+      - loki-data:/tmp
+    ports:
+      - 3100:3100
+    command:
+      - --config.file=/etc/loki/loki.yaml
+    restart: unless-stopped
+    networks:
+      - ethereum
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    volumes:
+      - ./monitoring/alertmanager/alertmanager.yaml:/etc/alertmanager/alertmanager.yaml
+      - alertmanager-data:/data
+    ports:
+      - 9093:9093
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yaml'
+      - '--log.level=debug'
+      - '--storage.path=/data'
+    restart: unless-stopped
+    networks:
+      - ethereum
+
+  eth-metrics-exporter:
+    image: samcm/ethereum-metrics-exporter:latest
+    container_name: eth-metrics-exporter
+    volumes:
+      - ./monitoring/prometheus/expoerter-config.yaml:/expoerter-config.yaml
+    ports:
+      - 9091:9090
+    command: --config /expoerter-config.yaml
+    restart: unless-stopped
+    networks:
+      - ethereum
+
+networks:
+  ethereum:
+    name: ethereum
+
+volumes:
+  eth1: {}
+  eth2: {}
+  prometheus-data: {}
+  grafana-data: {}
+  loki-data: {}
+  alertmanager-data: {}

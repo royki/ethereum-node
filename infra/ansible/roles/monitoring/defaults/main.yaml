@@ -1,0 +1,68 @@
+# docker config
+monitoring_docker_network: 'monitoring'
+monitoring_docker_restart_policy: 'always'
+monitoring_data_directory: '/data/monitoring'
+
+# Prometheus
+monitoring_prometheus_image: 'prom/prometheus'
+monitoring_prometheus_image_tag: 'latest'
+monitoring_prometheus_port: 9090
+monitoring_prometheus_service: 'prometheus'
+
+monitoring_prometheus_scrape_interval: '1s'
+monitoring_prometheus_eval_interval: '1s'
+monitoring_prometheus_scrape_timeout: '10s'
+monitoring_prometheus_job_scheme: 'http'
+
+# Grafana
+monitoring_grafana_image: 'grafana/grafana'
+monitoring_grafana_image_tag: 'latest'
+monitoring_grafana_port: 3000
+monitoring_grafana_service: 'grafana'
+
+# eth1
+monitoring_eth1_rpc_port: 8545
+monitoring_eth1_metrics_port: 6061
+monitoring_eth1_scrape_timeout: '10s'
+monitoring_eth1_scrape_interval: '15s'
+monitoring_eth1_metrics_path: '/debug/metrics/prometheus'
+
+# eth2
+monitoring_eth2_gateway_port: 5052
+monitoring_eth2_metrics_port: 8008
+monitoring_eth2_scrape_interval: '5s'
+monitoring_eth2_metrics_path: '/metrics'
+
+# loki
+monitoring_loki_image: 'grafana/loki'
+monitoring_loki_image_tag: 'latest'
+monitoring_loki_http_port: 3100
+monitoring_loki_grpc_port: 9096
+monitoring_loki_service: 'loki'
+monitoring_loki_replication_factor: 1
+monitoring_loki_retention_period: '30d'
+monitoring_loki_ingestion_rate: 128
+monitoring_loki_ingestion_burst_size: 512
+
+# ethereum-metrics-exporter
+monitoring_eth_metrics_exporter_image: 'samcm/ethereum-metrics-exporter'
+monitoring_eth_metrics_exporter_version: 'latest'
+monitoring_eth_metrics_exporter_service_name: 'eth-metrics-exporter'
+monitoring_eth_metrics_exporter_port: 9091
+monitoring_eth_metrics_exporter_metrics_path: '/metrics'
+
+# alertmanager
+monitoring_alertmanager_image: 'prom/alertmanager'
+monitoring_alertmanager_image_tag: 'latest'
+monitoring_alertmanager_port: 9093
+monitoring_alertmanager_service: 'alertmanager'
+
+# node-exporter
+monitoring_node_exporter_port: 9100
+
+# cadvisor
+monitoring_cadvisor_port: 8080
+
+# slack
+monitoring_slack_api_url: 'SLACK_WEBHOOK_URL'
+monitoring_slack_channel: 'SLACK_CHANNEL_NAME'

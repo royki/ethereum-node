@@ -1,0 +1,17 @@
+consensus:
+  enabled: true
+  url: "http://{{ hostvars[groups['eth-node'][0]].ansible_default_ipv4.address }}:{{ monitoring_eth2_gateway_port}}"
+  name: "consensus-client"
+execution:
+  enabled: true
+  url: "http://{{ hostvars[groups['eth-node'][0]].ansible_default_ipv4.address }}:{{ monitoring_eth1_rpc_port }}"
+  name: "execution-client"
+  modules:
+    - "eth"
+    - "net"
+    - "web3"
+    - "txpool"
+diskUsage:
+  enabled: false
+  directories:
+  - /data/ethereum
