@@ -5,6 +5,11 @@
 - Before executing the Docker Compose command, the user needs to generate a JWT secret and save it in a `.jwt.hex` file in the same location as the `docker-compose.yaml` file.
 - Considering Eth node and monitoring are in same server
 
+## Clone the repository
+
+- `git clone https://github.com/royki/ethereum-node.git`
+- `cd ~/ethereum-node/infra/docker-setup`
+
 ## Command to Generate and Save JWT Secret
 
 - `openssl rand -hex 32 | tr -d "\n" > .jwt.hex`
@@ -12,11 +17,11 @@
 ### For monitoring, it has provided monitoring, grafana, prometheus, loki, aletmanager directories with config and dashboard files
 
 - Before executing docker compose command, check all directories are in right place
-- Update `SLACK_WEBHOOK_URL` and `channel` name value in `~/monitoring/alertmanager/alertmanager.yaml`
+- Update `slack_api_url` and `channel` name value in `~/ethereum-node/infra/docker-setup/monitoring/alertmanager/alertmanager.yaml`
 
 ### Run docker compose to run and up Eth RPC services and Monitoring services
 
-- Assuming Docker and Docker Compose are already installed on the user's system and the system meets the requirements for an RPC node.
+- Assuming Docker and Docker Compose are already installed on the server and the system meets the requirements for an RPC node.
 - `docker compose up -d`
 - `docker compose ps`
 

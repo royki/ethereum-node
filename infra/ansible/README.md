@@ -9,8 +9,8 @@
 - For `prysm` client [prysm_suggested_fee_recipient](https://github.com/royki/ethereum-node/blob/master/infra/ansible/roles/ethnode/defaults/main.yaml#L66) address. [Optional]
 
 - For monitoring
-  - Update [monitoring_slack_api_url](<https://github.com/royki/ethereum-node/tree/master/infra/ansible/roles/monitoring/defaults/main.yaml#L67>
-  - Update [monitoring_slack_channel](<https://github.com/royki/ethereum-node/tree/master/infra/ansible/roles/monitoring/defaults/main.yaml#L68>
+  - Update [monitoring_slack_api_url](<https://github.com/royki/ethereum-node/tree/master/infra/ansible/roles/monitoring/defaults/main.yaml#L67>)
+  - Update [monitoring_slack_channel](<https://github.com/royki/ethereum-node/tree/master/infra/ansible/roles/monitoring/defaults/main.yaml#L68>)
 
 - Example of `host.cfg`
 
