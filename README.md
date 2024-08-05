@@ -21,6 +21,8 @@
 
 - [Check Readme for more details](<https://github.com/royki/ethereum-node/blob/master/infra/docker-setup/README.md>)
 
+---
+
 #### References
 
 - <https://geth.ethereum.org/docs/fundamentals/command-line-options>
