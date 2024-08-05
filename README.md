@@ -9,7 +9,7 @@
 5. Additionally, configurations for Route 53 and Certificate Manager are necessary to provide a DNS for users.
 6. A separate monitoring node is designated to monitor all RPC nodes. This monitoring setup includes:
    1. Configuration with Prometheus, Grafana, Loki, Node Exporter, Eth metrics exporeter, Cadvisors, Alertmanager.
-   2. Alerting based on resource usage.
+   2. Alerting based on resource usage and blockchain network peer numbers
    3. Alerts are sent to slack channel based on alert rules.
 7. Access to RPC nodes is restricted via IP whitelisting.
 8. Infra provistion and other setup from the architecture are out of the scope.
