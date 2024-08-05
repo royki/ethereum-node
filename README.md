@@ -20,3 +20,14 @@
 ### Configure and run via docker-compose
 
 - [Check Readme for more details](<https://github.com/royki/ethereum-node/blob/master/infra/docker-setup/README.md>)
+
+#### References
+
+- <https://geth.ethereum.org/docs/fundamentals/command-line-options>
+- <https://docs.prylabs.network/docs/prysm-usage/parameters>
+- <https://docs.prylabs.network/docs/prysm-usage/monitoring/grafana-dashboard>
+- <https://github.com/eth-educators/eth-docker>
+- <https://geth.ethereum.org/docs/monitoring/dashboards>
+- <https://grafana.com/grafana/dashboards/13877-single-geth-dashboard/>
+- <https://grafana.com/grafana/dashboards/15750-geth-server/>
+- <https://www.coincashew.com/coins/overview-eth/guide-or-how-to-setup-a-validator-on-eth2-mainnet/part-i-installation/monitoring-your-validator-with-grafana-and-prometheus>
