@@ -9,9 +9,9 @@
   when: not ansible_check_mode
 
 
-# - name: Run Eth node service
-#   ansible.builtin.command: |
-#     chdir={{ ethnode_data_dir }}
-#     docker compose -f docker-compose.yaml up -d --force-recreate
-#   changed_when: false
-#   when: not ansible_check_mode
+- name: Run Eth node service
+  ansible.builtin.command: |
+    chdir={{ ethnode_data_dir }}
+    docker compose -f docker-compose.yaml up -d --force-recreate
+  changed_when: false
+  when: not ansible_check_mode

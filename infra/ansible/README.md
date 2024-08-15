@@ -53,6 +53,8 @@
   - `cd ~/infra/ansible`
   - `ansible-playbook -i hosts.cfg playbook.yaml -C` [dry-run]
   - `ansible-playbook -i hosts.cfg playbook.yaml -v`
+  - Assuming Docker and Docker Compose are already installed on the server and the system meets the requirements for an RPC node.
+  - TODO: Add docker role
 
 ### Monitoring URLs
 
